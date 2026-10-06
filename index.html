@@ -1,0 +1,139 @@
+
+---
+
+## 2、前端仓库：web-calculator-frontend
+文件：`index.html`（全部英文，界面文字英文，JS全英文变量）
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Web Calculator Frontend</title>
+    <style>
+        .calculator{width:320px;margin:20px auto;padding:15px;border:1px solid #888;border-radius:8px;}
+        #display{width:95%;height:40px;font-size:22px;text-align:right;margin-bottom:10px;}
+        button{width:70px;height:70px;font-size:20px;margin:3px;cursor:pointer;}
+        table{margin:30px auto;border-collapse: collapse;}
+        th,td{border:1px solid #aaa;padding:8px;min-width:80px;text-align:center;}
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <input type="text" id="display" readonly>
+        <br>
+        <button onclick="appendChar('7')">7</button>
+        <button onclick="appendChar('8')">8</button>
+        <button onclick="appendChar('9')">9</button>
+        <button onclick="appendChar('/')">/</button>
+        <br>
+        <button onclick="appendChar('4')">4</button>
+        <button onclick="appendChar('5')">5</button>
+        <button onclick="appendChar('6')">6</button>
+        <button onclick="appendChar('×')">×</button>
+        <br>
+        <button onclick="appendChar('1')">1</button>
+        <button onclick="appendChar('2')">2</button>
+        <button onclick="appendChar('3')">3</button>
+        <button onclick="appendChar('-')">-</button>
+        <br>
+        <button onclick="appendChar('(')">(</button>
+        <button onclick="appendChar('0')">0</button>
+        <button onclick="appendChar(')')">)</button>
+        <button onclick="appendChar('+')">+</button>
+        <br>
+        <button onclick="appendChar('.')">.</button>
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="calcEqual()" style="width:150px">=</button>
+    </div>
+
+    <table id="history-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Expression</th>
+                <th>Result</th>
+                <th>Time</th>
+                <th>Operation</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div style="text-align:center;">
+        <button onclick="clearAllHistory()">Clear All History</button>
+    </div>
+
+<script>
+const BASE_URL = "http://127.0.0.1:5000";
+
+// append character to input box
+function appendChar(char) {
+    const inputBox = document.getElementById("display");
+    inputBox.value += char;
+}
+
+// clear calculator input
+function clearDisplay() {
+    document.getElementById("display").value = "";
+}
+
+// send expression to backend api /api/calculate
+async function calcEqual() {
+    let expression = document.getElementById("display").value;
+    if (!expression) return;
+    expression = expression.replaceAll("×", "*");
+    try {
+        const response = await fetch(`${BASE_URL}/api/calculate`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({expression: expression})
+        });
+        const resData = await response.json();
+        if (resData.code === 200) {
+            document.getElementById("display").value = resData.data.result;
+            loadHistory();
+        } else {
+            document.getElementById("display").value = "Error";
+        }
+    } catch (err) {
+        document.getElementById("display").value = "Network Error";
+    }
+}
+
+// load all history records from /api/history
+async function loadHistory() {
+    const response = await fetch(`${BASE_URL}/api/history`);
+    const resData = await response.json();
+    let html = "";
+    for (const item of resData.data) {
+        html += `<tr>
+            <td>${item.id}</td>
+            <td>${item.expression}</td>
+            <td>${item.result}</td>
+            <td>${item.time}</td>
+            <td><button onclick="deleteSingleRecord(${item.id})">Delete</button></td>
+        </tr>`;
+    }
+    document.querySelector("#history-table tbody").innerHTML = html;
+}
+
+// delete single record by id
+async function deleteSingleRecord(recordId) {
+    await fetch(`${BASE_URL}/api/history/${recordId}`, {
+        method: "DELETE"
+    });
+    loadHistory();
+}
+
+// delete all history
+async function clearAllHistory() {
+    await fetch(`${BASE_URL}/api/history`, {
+        method: "DELETE"
+    });
+    loadHistory();
+}
+
+// load history after page loaded
+window.onload = loadHistory;
+</script>
+</body>
+</html>
