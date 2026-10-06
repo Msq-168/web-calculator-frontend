@@ -1,21 +1,22 @@
-# Calculator Frontend
-
-Frontend of a front-end/back-end separated calculator system, built with HTML, CSS, and vanilla JavaScript.
+# Web Calculator Frontend
+Frontend of separated front-end and back-end calculator.
+Only responsible for UI interaction. All math calculation is handled by backend API.
 
 ## Tech Stack
+HTML5, CSS3, Vanilla JavaScript
 
-Python 3.11.9, FastAPI, SQLite3
+## Environment
+Modern browser (Chrome recommended). Can be opened via Live Server.
 
-## Runtime Environment
+## How to run
+Open index.html directly or use Live Server.
 
-Python =3.11.9
+## Features
+1. Calculator UI, support numbers, decimal point, brackets and four arithmetic operations.
+2. Send expression string to backend API `POST /api/calculate`.
+3. Fetch history records from `GET /api/history`.
+4. Delete single history record or clear all records.
 
-## How to Run
-
-1. Start the backend service first (default: http://127.0.0.1:5000/)
-2. Open `index.html` directly in a browser
-
-You may also use a local static server:
-
-```bash
-python -m http.server 5500
+## Backend Connection
+Request backend service: `http://127.0.0.1:5000`
+Start backend first, otherwise network error will occur.
